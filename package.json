@@ -1,0 +1,21 @@
+{
+  "name": "agentic-playwright",
+  "version": "1.0.0",
+  "description": "Agentic Playwright Automation Framework using multi-agent architecture",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:chromium": "playwright test --project=chromium",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen"
+  },
+  "keywords": ["playwright", "agentic", "test-automation", "typescript"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^26.6.6"
+  }
+}
