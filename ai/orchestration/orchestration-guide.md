@@ -5,15 +5,19 @@ Orchestration is the process of coordinating multiple AI agents so they work tog
 
 ## Agent Flow
 
-User Story / Requirement  
+Module Requirements + User Story  
 ↓  
-1. Test Cases Agent  
+1. Requirement Validation Agent  
 ↓  
-2. Review Agent  
+Matched?  
+├── Yes → 2. Test Cases Agent  
+└── No  → Show mismatches (refine User Story or Requirements)  
 ↓  
-3. Playwright Agent  
+3. Review Agent  
 ↓  
-4. Code Review Agent  
+4. Playwright Agent  
+↓  
+5. Code Review Agent  
 ↓  
 Human Final Review + Run Tests
 
