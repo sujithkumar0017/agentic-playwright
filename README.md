@@ -1,33 +1,44 @@
-# Agentic Playwright Framework
+# QA Forge
 
-An AI-powered multi-agent test automation framework built with **Playwright + TypeScript**. Specialized agents generate test cases, review them, turn them into Playwright code, and review that code.
+An AI-powered, multi-agent QA framework template. Clone it to start the QA process for a new project. Specialized agents validate requirements, generate test cases, review them, turn them into automated tests, and review that code.
+
+**Current scope:** UI automation with **Playwright + TypeScript**.
+**Planned:** API testing, mobile automation, and load testing.
 
 ## Features
 
-- Multi-agent architecture (Test Cases, Review, Playwright, Code Review)
-- Page Object Model
-- Playwright fixtures, with optional authentication storage (storageState)
-- Playwright MCP integration with Cursor
-- GitHub Actions CI
-- Reusable agents that take the application, module and user story as inputs
+- Multi-agent pipeline: Requirement Validation → Test Cases → Test Case Review → Playwright → Code Review
+- Agents work in Cursor (prompt templates) and in Claude Code (subagents in `.claude/agents/`)
+- Page Object Model with Playwright fixtures, and optional authentication storage (`storageState`)
+- Playwright MCP integration, so agents can inspect the live application
+- Type-checking and ESLint (`eslint-plugin-playwright`) enforce the framework's rules: no hard waits, web-first assertions, no `test.only`
+- GitHub Actions CI: type-check, lint, tests, and report artifacts
+- Traceability from User Story → validation → test cases (TC_IDs) → spec files → code review
 - Covers Positive, Negative, Edge Case, Functional, and UI scenarios
 
 ## Project Structure
 
 ```text
-agentic-playwright/
+qa-forge/
 ├── ai/
-│   ├── agents/             # Agent definitions
-│   ├── prompts/            # Reusable prompt templates
-│   └── orchestration/      # Orchestration guide
-├── docs/test-cases/        # Generated test case documents
+│   ├── agents/             # Agent definitions (source of truth)
+│   ├── prompts/            # Prompt templates, one per pipeline step
+│   └── orchestration/      # Orchestration guide and conventions
+├── .claude/agents/         # Claude Code subagents (load ai/agents/*)
+├── docs/
+│   ├── validation/         # Requirement validation reports
+│   ├── test-cases/         # Test case documents
+│   └── code-reviews/       # Code review reports
 ├── fixtures/               # Custom Playwright fixtures (exports test and expect)
 ├── pages/                  # Page Objects
 ├── test-data/              # Test data
 ├── tests/                  # Test specs
 ├── utils/                  # Shared helpers
 ├── .cursor/mcp.json        # Playwright MCP server for Cursor
+├── .mcp.json               # Playwright MCP server for Claude Code
 ├── .github/workflows/      # CI pipeline
+├── CLAUDE.md               # Project guide for Claude Code
+├── eslint.config.mjs
 └── playwright.config.ts
 ```
 
@@ -35,8 +46,8 @@ agentic-playwright/
 
 ### Prerequisites
 
-- Node.js 18+
-- Cursor IDE (recommended)
+- Node.js 20+ (CI uses Node 24)
+- Cursor or Claude Code (recommended)
 
 ### Installation
 
@@ -59,9 +70,10 @@ $env:BASE_URL = "https://your-app.example.com"; npx playwright test
 
 If your application uses a custom test id attribute (for example `data-test`), uncomment `testIdAttribute` in `playwright.config.ts`.
 
-### Run Tests
+### Run Tests and Checks
 
 ```bash
+npm run check                   # Type-check + lint
 npx playwright test             # Run all tests
 npx playwright test --headed    # Run with a visible browser
 npx playwright test --ui        # Open UI mode
@@ -74,9 +86,18 @@ npx playwright show-report      # Open the HTML report
 
 ## Using the Multi-Agent Flow
 
-1. Use the prompt templates in `ai/prompts/`.
-2. Follow the orchestration guide in `ai/orchestration/orchestration-guide.md`.
-3. Agents generate test cases, review them, write the Playwright code, and review the code.
+Follow `ai/orchestration/orchestration-guide.md`. In short:
+
+| Step | Agent | Prompt template |
+|---|---|---|
+| 1 | Requirement Validation | `ai/prompts/validate-requirements.md` |
+| 2 | Test Cases | `ai/prompts/generate-test-cases.md` |
+| 3 | Test Case Review | `ai/prompts/review-test-cases.md` |
+| 4 | Playwright | `ai/prompts/generate-playwright-tests.md` |
+| 5 | Code Review | `ai/prompts/code-review.md` |
+| 6 | Human review + push | `ai/prompts/push-to-github.md` |
+
+All agents share one set of conventions. Module slugs are lowercase kebab-case (`shopping-cart`), TC_IDs look like `TC_SHOPPING_CART_001` and are never renumbered, and file paths are derived from the slug. See the guide for details.
 
 ## Authentication (optional)
 
@@ -86,11 +107,17 @@ To log in once and reuse the session across tests:
 2. Uncomment the `setup` project and the `storageState` and `dependencies` lines in `playwright.config.ts`.
 3. If some tests need a logged-out browser (for example login tests), run them in a separate project without `storageState`.
 
-`playwright/.auth/` is already in `.gitignore`.
+Read credentials from environment variables (for example a local `.env` file). `playwright/.auth/` and `.env` files are git-ignored.
 
 ## CI
 
-`.github/workflows/playwright.yml` runs the tests on every push and pull request to `main` or `master`, and uploads the HTML report and test results as artifacts. Set a `BASE_URL` repository variable under **Settings → Secrets and variables → Actions → Variables**.
+`.github/workflows/playwright.yml` runs on every push and pull request to `main` or `master`. It type-checks, lints, runs the tests, and uploads the HTML report and test results as artifacts.
+
+Set a `BASE_URL` repository variable under **Settings → Secrets and variables → Actions → Variables**. If `BASE_URL` is missing, CI fails as soon as any spec other than the self-contained example exists.
+
+## Contributing
+
+Commit to a feature branch and open a pull request. Do not push directly to `main`.
 
 ## License
 

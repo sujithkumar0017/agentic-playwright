@@ -10,24 +10,42 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      # Set a BASE_URL repository variable (Settings > Secrets and variables > Actions > Variables).
+      BASE_URL: ${{ vars.BASE_URL }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version: 24
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check BASE_URL
+        run: |
+          if [ -z "$BASE_URL" ]; then
+            # Only the self-contained example test can pass without an application.
+            if ls tests/*.spec.ts | grep -vq '^tests/example.spec.ts$'; then
+              echo "::error::BASE_URL repository variable is not set, but application tests exist. Set it under Settings > Secrets and variables > Actions > Variables."
+              exit 1
+            fi
+            echo "::warning::BASE_URL is not set. Falling back to http://localhost:3000 (fine for the example test only)."
+          fi
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
         run: npx playwright test
-        env:
-          # Set a BASE_URL repository variable (Settings > Secrets and variables > Actions > Variables).
-          BASE_URL: ${{ vars.BASE_URL }}
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
