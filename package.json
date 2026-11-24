@@ -1,21 +1,37 @@
 {
-  "name": "agentic-playwright",
+  "name": "qa-forge",
   "version": "1.0.0",
-  "description": "Agentic Playwright Automation Framework using multi-agent architecture",
+  "description": "QA Forge: agent-driven QA framework template (test design, UI, API, mobile and load testing)",
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "test:chromium": "playwright test --project=chromium",
     "report": "playwright show-report",
-    "codegen": "playwright codegen"
+    "codegen": "playwright codegen",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "check": "npm run typecheck && npm run lint"
   },
-  "keywords": ["playwright", "agentic", "test-automation", "typescript"],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "playwright",
+    "agentic",
+    "test-automation",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.55.0",
-    "@types/node": "^26.6.6"
+    "@types/node": "^24.19.2",
+    "eslint": "^10.15.0",
+    "eslint-plugin-playwright": "^2.12.2",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.74.0"
   }
 }

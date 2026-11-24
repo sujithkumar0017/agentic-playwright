@@ -5,89 +5,87 @@ Orchestration is the process of coordinating multiple AI agents so they work tog
 
 ## Agent Flow
 
-Module Requirements + User Story  
-↓  
-1. Requirement Validation Agent  
-↓  
-Matched?  
-├── Yes → 2. Test Cases Agent  
-└── No  → Show mismatches (refine User Story or Requirements)  
-↓  
-3. Review Agent  
-↓  
-4. Playwright Agent  
-↓  
-5. Code Review Agent  
-↓  
-Human Final Review + Run Tests
+```text
+Module Requirements + User Story
+            │
+            ▼
+ 1. Requirement Validation Agent ──► docs/validation/<module-slug>-validation.md
+            │
+     Proceed = Yes? ── No ──► Refine the User Story or Requirements, then repeat step 1
+            │ Yes
+            ▼
+ 2. Test Cases Agent ──────────────► docs/test-cases/<module-slug>-test-cases.md
+            │
+            ▼
+ 3. Review Agent ──────────────────► updates the test cases file (only after the human says Yes)
+            │
+            ▼
+ 4. Playwright Agent ──────────────► tests/<module-slug>.spec.ts, pages/, fixtures/, test-data/
+            │
+            ▼
+ 5. Code Review Agent ─────────────► docs/code-reviews/<module-slug>-code-review.md
+            │
+            ▼
+ Human final review + run tests ──► Push to GitHub (feature branch + pull request)
+```
 
-## Dynamic Inputs
+"Proceed = Yes" means a **Matched** status, or a **Partially Matched** status whose gaps the human explicitly accepted. See the Decision Rules in `ai/agents/requirement-validation.agent.md`.
 
-When using the agents, provide these inputs where applicable:
+## Conventions (used by every agent)
 
-- **Application Name**: (e.g. Sauce Demo, MyApp)
-- **Module / Feature Name**: (e.g. Login, Products, Cart, Checkout)
-- **Application URL**: (if available)
-- **User Story / Requirement**
+| Item | Convention | Example |
+|---|---|---|
+| Module Name | Display name | `Shopping Cart` |
+| Module slug | Lowercase kebab-case, used in every file name | `shopping-cart` |
+| TC_ID | `TC_<MODULE>_<NNN>`. IDs are permanent: never renumbered or reused | `TC_SHOPPING_CART_001` |
+| Validation report | `docs/validation/<module-slug>-validation.md` | `docs/validation/shopping-cart-validation.md` |
+| Test cases | `docs/test-cases/<module-slug>-test-cases.md` | `docs/test-cases/shopping-cart-test-cases.md` |
+| Spec file | `tests/<module-slug>.spec.ts` | `tests/shopping-cart.spec.ts` |
+| Test data | `test-data/<module-slug>.data.ts` | `test-data/shopping-cart.data.ts` |
+| Code review | `docs/code-reviews/<module-slug>-code-review.md` | `docs/code-reviews/shopping-cart-code-review.md` |
+
+Traceability: every test title starts with its TC_ID, and each test case's **Automation** field records the spec file that automates it.
+
+## Inputs
+
+| Placeholder | Meaning |
+|---|---|
+| `{{applicationName}}` | Application name (e.g. MyApp) |
+| `{{moduleName}}` | Module / feature display name (e.g. Login, Shopping Cart) |
+| `{{moduleSlug}}` | Module slug (e.g. login, shopping-cart) |
+| `{{applicationUrl}}` | Application URL (if available) |
+| `{{moduleRequirements}}` | The module's requirements |
+| `{{userStory}}` | The User Story |
+| `{{testCaseIds}}` | The TC_IDs to automate in step 4 |
+| `{{changeSummary}}` | Summary of changes, for the push step |
 
 ## Step-by-Step Usage
 
-### Step 1: Test Cases Agent
-You are the Test Cases Agent. Follow the instructions defined in @ai/agents/test-cases.agent.md
+Each step has one prompt template in `ai/prompts/`. Fill in the placeholders and send it to the AI assistant. The templates are the only copy of the prompts. Edit them there, not in this guide.
 
-Application Name: [Application Name]  
-Module: [Module Name]  
-Application URL: [URL]
+| Step | Agent | Prompt template | Output |
+|---|---|---|---|
+| 1 | Requirement Validation | [validate-requirements.md](../prompts/validate-requirements.md) | Validation report + Proceed Yes/No |
+| 2 | Test Cases | [generate-test-cases.md](../prompts/generate-test-cases.md) | Test cases document |
+| 3 | Review | [review-test-cases.md](../prompts/review-test-cases.md) | Review summary + improved test cases (saved after confirmation) |
+| 4 | Playwright | [generate-playwright-tests.md](../prompts/generate-playwright-tests.md) | Spec, Page Objects, fixtures, test data |
+| 5 | Code Review | [code-review.md](../prompts/code-review.md) | Code review report |
+| 6 | Human | [push-to-github.md](../prompts/push-to-github.md) | Feature branch + pull request |
 
-Generate comprehensive test cases for the following User Story:
+Do not start a step until the previous step's output exists and, where required, the human has approved it.
 
-[Paste User Story here]
+### Using Claude Code
+Each agent is also available as a Claude Code subagent in `.claude/agents/`:
+`requirement-validation`, `test-cases`, `test-case-review`, `playwright`, `code-review`.
+Ask Claude Code to "use the requirement-validation agent for module X", and give it the same inputs. The subagents read their instructions from `ai/agents/`, so there is only one definition of each agent to maintain.
 
-Cover Positive, Negative, Edge Cases, Functional, and UI scenarios.  
-Save the output in docs/test-cases/[module-name]-test-cases.md
-
-### Step 2: Review Agent
-You are the Review Agent. Follow the instructions defined in @ai/agents/review.agent.md
-
-Application Name: [Application Name]  
-Module: [Module Name]
-
-Review the test cases in @docs/test-cases/[module-name]-test-cases.md
-
-Give a Review Summary and provide Improved Test Cases.
-
-### Step 3: Playwright Agent
-You are the Playwright Agent. Follow the instructions defined in @ai/agents/playwright.agent.md
-
-Application Name: [Application Name]  
-Module: [Module Name]  
-Application URL: [URL]
-
-Convert the following high-priority test cases into Playwright + TypeScript code using Page Object Model:
-
-[List TC IDs or paste selected test cases]
-
-Save the tests in tests/[module-name].spec.ts  
-Create or update Page Objects as needed.
-
-### Step 4: Code Review Agent
-You are the Code Review Agent. Follow the instructions defined in @ai/agents/code-review.agent.md
-
-Application Name: [Application Name]  
-Module: [Module Name]
-
-Review the following files:
-
-- @tests/[module-name].spec.ts  
-- Related Page Objects and test data files
-
-Give a Review Summary and suggest improvements if needed.
+### Using Cursor
+Paste the filled-in prompt template into Cursor chat. The `@ai/agents/...` references attach the agent definition.
 
 ## Quick Tips
 - Work module by module.
 - Automate high-priority test cases first.
-- Always run the generated tests and fix failures.
-- Keep test data in the `test-data/` folder.
-- Follow Page Object Model.
-- Use Playwright MCP when agents need to inspect the live application.
-- Reuse existing Page Objects whenever possible.
+- Always run `npm run check` and the generated tests, and fix failures.
+- Keep test data in the `test-data/` folder, and secrets in environment variables.
+- Follow the Page Object Model, and reuse existing Page Objects whenever possible.
+- Use the Playwright MCP server when agents need to inspect the live application.

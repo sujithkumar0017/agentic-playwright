@@ -1,26 +1,28 @@
-# Generate Playwright Tests Prompt
+# Generate Playwright Tests Prompt (Step 4)
 
 You are the Playwright Agent. Follow the instructions defined in @ai/agents/playwright.agent.md
 
-**Application Name:** {{applicationName}}  
-**Module:** {{moduleName}}  
+**Application Name:** {{applicationName}}
+**Module:** {{moduleName}}
+**Module slug:** {{moduleSlug}}
 **Application URL:** {{applicationUrl}}
 
-Convert the following high-priority test cases into Playwright + TypeScript code using Page Object Model:
+Reviewed test cases: @docs/test-cases/{{moduleSlug}}-test-cases.md
 
-{{testCases}}
+Automate these test cases (High priority first):
+
+{{testCaseIds}}
 
 ### Requirements
-- Use Page Object Model
-- Reuse existing Page Objects where possible
+- Use the Page Object Model, and reuse existing Page Objects in @pages/ where possible
+- Register new Page Objects as fixtures in @fixtures/index.ts and use them through fixtures
 - Import `test` and `expect` from `../fixtures` (not from `@playwright/test`)
-- Prefer authentication storage (storageState). Do not add repetitive login steps unless the test specifically requires a logged-out state
-- Use fixture-provided page objects when available
-- Save tests in `tests/{{moduleName}}.spec.ts`
-- Centralize test data in the `test-data/` folder if needed
-- Keep tests focused on the scenario, not on setup
+- Prefer authentication storage (`storageState`). Do not add repetitive login steps unless the test needs a logged-out state
+- Start each test title with its TC_ID
+- Save tests to `tests/{{moduleSlug}}.spec.ts` and test data to `test-data/{{moduleSlug}}.data.ts`
+- Use the Playwright MCP server to inspect the live application for locators
+- Run `npm run check` and the new tests before finishing
+- Update the **Automation** field of each automated case in the test cases document
 
 ### Output
-- List Page Objects that need to be created or updated
-- Provide the complete test file code
-- Mention if any special setup is required
+Follow the Output Format in the agent definition (files changed, code, coverage table, run results, special setup).
