@@ -8,6 +8,7 @@ An AI-powered, multi-agent QA framework template. Clone it to start the QA proce
 ## Features
 
 - Multi-agent pipeline: Requirement Validation → Test Cases → Test Case Review → Playwright → Code Review
+- Change-based test maintenance: when an approved requirement changes, an impact analysis drives updates to only the affected test cases and tests, with permanent TC_IDs and a regression run
 - Agents work in Cursor (prompt templates) and in Claude Code (subagents in `.claude/agents/`)
 - Page Object Model with Playwright fixtures, and optional authentication storage (`storageState`)
 - Playwright MCP integration, so agents can inspect the live application
@@ -97,7 +98,9 @@ Follow `ai/orchestration/orchestration-guide.md`. In short:
 | 5 | Code Review | `ai/prompts/code-review.md` |
 | 6 | Human review + push | `ai/prompts/push-to-github.md` |
 
-All agents share one set of conventions. Module slugs are lowercase kebab-case (`shopping-cart`), TC_IDs look like `TC_SHOPPING_CART_001` and are never renumbered, and file paths are derived from the slug. See the guide for details.
+When a requirement changes after a module's test cases are approved, use the **change workflow** in the same guide instead: Requirement Change Validation → Impact Analysis → Test Case Update → Test Case Review → Automation Update → Regression → Code Review → Human Approval. It uses the prompt templates `validate-requirement-change.md`, `update-test-cases.md` and `update-playwright-tests.md`, plus the review and code-review templates.
+
+All agents share one set of conventions. Module slugs are lowercase kebab-case (`shopping-cart`), TC_IDs look like `TC_SHOPPING_CART_001` and become permanent once the test cases are approved (obsolete cases are retired, never renumbered or deleted), and file paths are derived from the slug. See the guide for details.
 
 ## Authentication (optional)
 
