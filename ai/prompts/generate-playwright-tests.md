@@ -7,7 +7,7 @@ You are the Playwright Agent. Follow the instructions defined in @ai/agents/play
 **Module slug:** {{moduleSlug}}
 **Application URL:** {{applicationUrl}}
 
-Reviewed test cases: @docs/test-cases/{{moduleSlug}}-test-cases.md
+Approved test cases: @docs/test-cases/{{moduleSlug}}-test-cases.md
 
 Automate these test cases (High priority first):
 

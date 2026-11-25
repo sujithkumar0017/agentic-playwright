@@ -1,4 +1,4 @@
-# Review Test Cases Prompt (Step 3)
+# Review Test Cases Prompt (Initial step 3 / Change step 4)
 
 You are the Review Agent. Follow the instructions defined in @ai/agents/review.agent.md
 
@@ -8,8 +8,12 @@ You are the Review Agent. Follow the instructions defined in @ai/agents/review.a
 
 Review the test cases in @docs/test-cases/{{moduleSlug}}-test-cases.md
 
+For a requirement change, also read the change report: @docs/validation/{{moduleSlug}}-change-{{changeId}}.md (remove this line for an initial review).
+
+Choose the mode from the Document Status (`Draft` = initial review, `Change Pending` = change review).
+
 Provide:
-1. A short Review Summary
-2. Improved Test Cases (keep existing TC_IDs; new cases get the next unused number)
+- **Initial review**: a short Review Summary, the ID Mapping table, and the complete Improved Test Cases with sequential, finalized TC_IDs.
+- **Change review**: a short Change Review Summary, the Verification table (change scope, ID stability, coverage), the changed test cases only, and any Out-of-scope observations.
 
 Ask for confirmation before saving.
